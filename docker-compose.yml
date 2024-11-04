@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: socialmediapp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Rahulrj@97
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: >
+      sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DEBUG=True
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - DJANGO_SECRET_KEY=django-insecure-qc^nta&e!2azfatkv@lhtrak=yqa1c=vp4l-0v=tfbccw6krhr
+    working_dir: /app/socialapp
+
+  frontend:
+    build:
+      context: ./frontend/socialmedia-app
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend/socialmedia-app:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: npm start
+
+volumes:
+  postgres_data:
